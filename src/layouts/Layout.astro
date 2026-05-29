@@ -1,23 +1,119 @@
+---
+import '../styles/global.css';
+import { ThemeToggle } from '../components/ThemeToggle';
+
+interface Props {
+	title?: string;
+}
+
+const { title = "Attendance Tracker" } = Astro.props;
+---
+
 <!doctype html>
 <html lang="en">
 	<head>
 		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+		<link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
+		<link rel="shortcut icon" href="/favicon.ico" />
+		<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+		<meta name="apple-mobile-web-app-title" content="Attendance" />
+		<link rel="manifest" href="/site.webmanifest" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Astro Basics</title>
+		<title>{title}</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap" rel="stylesheet">
+		<script is:inline>
+			const theme = (() => {
+				if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
+					return localStorage.getItem('theme');
+				}
+				if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+					return 'dark';
+				}
+				return 'light';
+			})();
+		
+			if (theme === 'dark') {
+				document.documentElement.classList.add('dark');
+			} else {
+				document.documentElement.classList.remove('dark');
+			}
+		
+			window.localStorage.setItem('theme', theme);
+		</script>
 	</head>
-	<body>
-		<slot />
+	<body class="min-h-screen flex flex-col bg-canvas-soft text-ink font-geist antialiased">
+		<!-- Navigation Bar -->
+		<nav class="sticky top-0 z-50 h-16 bg-canvas/80 backdrop-blur-md border-b border-hairline px-s-md md:px-0">
+			<div class="max-w-[1400px] mx-auto h-full flex items-center justify-between px-0 md:px-s-lg">
+				<div class="flex items-center gap-s-xs md:gap-s-md">
+					<a href="/" class="flex items-center gap-s-xxs font-semibold text-[18px] md:text-[20px] tracking-[-0.03em] hover:opacity-80 transition-opacity">
+						<span class="text-primary translate-no">Attendance</span>
+						<span class="text-mute translate-no font-normal hidden xs:inline">Tracker</span>
+					</a>
+					<div class="hidden md:flex items-center gap-s-xs ml-s-md">
+						<a href="/dashboard" class="body-sm text-body hover:text-ink transition-colors px-s-sm h-[28px] flex items-center rounded-full hover:bg-canvas-soft-2">Dashboard</a>
+						<a href="/subjects" class="body-sm text-body hover:text-ink transition-colors px-s-sm h-[28px] flex items-center rounded-full hover:bg-canvas-soft-2">Subjects</a>
+					</div>
+				</div>
+				<div class="flex items-center gap-s-xs md:gap-s-sm">
+					<ThemeToggle client:load />
+					<div class="hidden sm:flex items-center gap-s-xs">
+						<button class="button-secondary-sm shadow-level-1">Log In</button>
+						<button class="button-primary-sm shadow-level-2">Sign Up</button>
+					</div>
+					<button class="sm:hidden button-primary-sm shadow-level-2 px-s-sm">Start</button>
+				</div>
+			</div>
+		</nav>
+
+		<!-- Main Content -->
+		<main class="flex-grow">
+			<slot />
+		</main>
+
+		<!-- Footer -->
+		<footer class="bg-canvas border-t border-hairline py-s-4xl px-s-lg">
+			<div class="max-w-[1400px] mx-auto grid grid-cols-2 md:grid-cols-4 gap-s-xl">
+				<div class="space-y-s-md">
+					<p class="caption-mono uppercase text-mute font-semibold tracking-wider text-[10px]">Product</p>
+					<ul class="space-y-s-xs">
+						<li><a href="#" class="body-sm text-body hover:text-ink transition-colors">Features</a></li>
+						<li><a href="#" class="body-sm text-body hover:text-ink transition-colors">Pricing</a></li>
+					</ul>
+				</div>
+				<div class="space-y-s-md">
+					<p class="caption-mono uppercase text-mute font-semibold tracking-wider text-[10px]">Company</p>
+					<ul class="space-y-s-xs">
+						<li><a href="#" class="body-sm text-body hover:text-ink transition-colors">About</a></li>
+						<li><a href="#" class="body-sm text-body hover:text-ink transition-colors">Privacy Policy</a></li>
+					</ul>
+				</div>
+				<div class="space-y-s-md">
+					<p class="caption-mono uppercase text-mute font-semibold tracking-wider text-[10px]">Social</p>
+					<ul class="space-y-s-xs">
+						<li><a href="#" class="body-sm text-body hover:text-ink transition-colors">Twitter</a></li>
+						<li><a href="#" class="body-sm text-body hover:text-ink transition-colors">GitHub</a></li>
+					</ul>
+				</div>
+				<div class="space-y-s-md">
+					<p class="caption-mono uppercase text-mute font-semibold tracking-wider text-[10px]">Legal</p>
+					<ul class="space-y-s-xs">
+						<li><a href="#" class="body-sm text-body hover:text-ink transition-colors">Terms of Service</a></li>
+						<li><a href="#" class="body-sm text-body hover:text-ink transition-colors">Cookie Policy</a></li>
+					</ul>
+				</div>
+			</div>
+			<div class="max-w-[1400px] mx-auto mt-s-4xl pt-s-lg border-t border-hairline flex flex-col md:flex-row justify-between items-center gap-s-md">
+				<p class="body-sm text-mute tabular-nums">© 2026 AttendanceTracker.xyz. All rights reserved.</p>
+				<div class="flex items-center gap-s-sm px-s-sm py-1 rounded-full border border-hairline bg-canvas-soft-2 shadow-level-1">
+					<div class="h-2 w-2 rounded-full bg-success animate-pulse"></div>
+					<p class="caption-mono text-[10px] text-body font-medium uppercase tracking-widest">Systems Nominal</p>
+				</div>
+			</div>
+		</footer>
 	</body>
 </html>
-
-<style>
-	html,
-	body {
-		margin: 0;
-		width: 100%;
-		height: 100%;
-	}
-</style>
