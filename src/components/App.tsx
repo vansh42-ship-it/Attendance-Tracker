@@ -3,28 +3,21 @@ import { Dashboard } from './Dashboard';
 import { Hero } from './Hero';
 import { useAttendance, AttendanceProvider } from '../store/useAttendance';
 
-const AppContent: React.FC = () => {
+const AppContent: React.FC<{ customH1?: string }> = ({ customH1 }) => {
   const { subjects } = useAttendance();
   const [view, setView] = useState<'landing' | 'dashboard'>('landing');
 
-  useEffect(() => {
-    // If user has subjects, go straight to dashboard
-    if (subjects.length > 0) {
-      setView('dashboard');
-    }
-  }, [subjects.length]);
-
-  if (view === 'landing' && subjects.length === 0) {
-    return <Hero onStart={() => setView('dashboard')} />;
+  if (view === 'landing') {
+    return <Hero onStart={() => setView('dashboard')} customH1={customH1} />;
   }
 
   return <Dashboard />;
 };
 
-export const App: React.FC = () => {
+export const App: React.FC<{ customH1?: string }> = ({ customH1 }) => {
   return (
     <AttendanceProvider>
-      <AppContent />
+      <AppContent customH1={customH1} />
     </AttendanceProvider>
   );
 };

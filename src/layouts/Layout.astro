@@ -4,9 +4,19 @@ import { ThemeToggle } from '../components/ThemeToggle';
 
 interface Props {
 	title?: string;
+	description?: string;
+	canonicalURL?: string;
+	ogImage?: string;
+	ogType?: string;
 }
 
-const { title = "Attendance Tracker" } = Astro.props;
+const { 
+	title = "Attendance Tracker", 
+	description = "The most advanced attendance tracker for students. Subject-wise logs, predictive bunking algorithms, and a minimalist design.",
+	canonicalURL = Astro.url.href,
+	ogImage = "/favicon-96x96.png", // Default image
+	ogType = "website"
+} = Astro.props;
 ---
 
 <!doctype html>
@@ -14,6 +24,27 @@ const { title = "Attendance Tracker" } = Astro.props;
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+		
+		<!-- Primary Meta Tags -->
+		<title>{title}</title>
+		<meta name="title" content={title} />
+		<meta name="description" content={description} />
+		<link rel="canonical" href={canonicalURL} />
+
+		<!-- Open Graph / Facebook -->
+		<meta property="og:type" content={ogType} />
+		<meta property="og:url" content={Astro.url.href} />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		<meta property="og:image" content={new URL(ogImage, Astro.url)} />
+
+		<!-- Twitter -->
+		<meta property="twitter:card" content="summary_large_image" />
+		<meta property="twitter:url" content={Astro.url.href} />
+		<meta property="twitter:title" content={title} />
+		<meta property="twitter:description" content={description} />
+		<meta property="twitter:image" content={new URL(ogImage, Astro.url)} />
+
 		<link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<link rel="shortcut icon" href="/favicon.ico" />
@@ -54,10 +85,6 @@ const { title = "Attendance Tracker" } = Astro.props;
 						<span class="text-primary translate-no">Attendance</span>
 						<span class="text-mute translate-no font-normal hidden xs:inline">Tracker</span>
 					</a>
-					<div class="hidden md:flex items-center gap-s-xs ml-s-md">
-						<a href="/dashboard" class="body-sm text-body hover:text-ink transition-colors px-s-sm h-[28px] flex items-center rounded-full hover:bg-canvas-soft-2">Dashboard</a>
-						<a href="/subjects" class="body-sm text-body hover:text-ink transition-colors px-s-sm h-[28px] flex items-center rounded-full hover:bg-canvas-soft-2">Subjects</a>
-					</div>
 				</div>
 				<div class="flex items-center gap-s-xs md:gap-s-sm">
 					<ThemeToggle client:load />
@@ -88,8 +115,8 @@ const { title = "Attendance Tracker" } = Astro.props;
 				<div class="space-y-s-md">
 					<p class="caption-mono uppercase text-mute font-semibold tracking-wider text-[10px]">Company</p>
 					<ul class="space-y-s-xs">
-						<li><a href="#" class="body-sm text-body hover:text-ink transition-colors">About</a></li>
-						<li><a href="#" class="body-sm text-body hover:text-ink transition-colors">Privacy Policy</a></li>
+						<li><a href="/about" class="body-sm text-body hover:text-ink transition-colors">About</a></li>
+						<li><a href="/contact" class="body-sm text-body hover:text-ink transition-colors">Contact</a></li>
 					</ul>
 				</div>
 				<div class="space-y-s-md">
@@ -102,8 +129,8 @@ const { title = "Attendance Tracker" } = Astro.props;
 				<div class="space-y-s-md">
 					<p class="caption-mono uppercase text-mute font-semibold tracking-wider text-[10px]">Legal</p>
 					<ul class="space-y-s-xs">
-						<li><a href="#" class="body-sm text-body hover:text-ink transition-colors">Terms of Service</a></li>
-						<li><a href="#" class="body-sm text-body hover:text-ink transition-colors">Cookie Policy</a></li>
+						<li><a href="/privacy-policy" class="body-sm text-body hover:text-ink transition-colors">Privacy Policy</a></li>
+						<li><a href="/terms" class="body-sm text-body hover:text-ink transition-colors">Terms of Service</a></li>
 					</ul>
 				</div>
 			</div>

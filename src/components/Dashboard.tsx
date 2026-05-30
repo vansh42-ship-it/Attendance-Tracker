@@ -3,6 +3,8 @@ import { useAttendance } from '../store/useAttendance';
 import { SubjectCard } from './SubjectCard';
 import { TimetableModal } from './TimetableModal';
 import { CalendarModal } from './CalendarModal';
+import { WeeklyOverview } from './WeeklyOverview';
+import timetableData from '../data/timetable.json';
 
 export const Dashboard: React.FC = () => {
   const { subjects, addSubject, deleteSubject, markAttendance, getSubjectStats, overallPercentage, getTodayClasses } = useAttendance();
@@ -11,9 +13,24 @@ export const Dashboard: React.FC = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showTimetableModal, setShowTimetableModal] = useState(false);
   const [showCalendarModal, setShowCalendarModal] = useState(false);
+  const [viewMode, setViewMode] = useState<'today' | 'all'>('all');
 
   const todayClasses = getTodayClasses();
   const todayName = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(new Date());
+
+  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const currentDay = days[new Date().getDay()];
+  
+  const todayScheduleNames = Array.from(new Set([
+    ...((timetableData.schedule as any)[currentDay] || []),
+    ...todayClasses.map(c => c.subject?.name).filter(Boolean)
+  ]));
+
+  const filteredSubjects = viewMode === 'today' 
+    ? subjects.filter(s => todayScheduleNames.includes(s.name))
+    : subjects;
+
+  const noClassesToday = viewMode === 'today' && todayScheduleNames.length === 0;
 
   const handleAddSubject = (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +54,7 @@ export const Dashboard: React.FC = () => {
           <div className="space-y-s-sm md:space-y-s-md">
             <div className="flex items-center gap-s-xs">
               <span className="h-1.5 w-1.5 rounded-full bg-success"></span>
-              <p className="caption-mono text-mute uppercase tracking-widest text-[10px]">Attendance System v1.0</p>
+              <p className="caption-mono text-mute uppercase tracking-widest text-[10px]">Attendance System v1.1</p>
             </div>
             <h1 className="display-lg md:display-xl text-ink max-w-2xl">
               Your academic command center.
@@ -55,11 +72,30 @@ export const Dashboard: React.FC = () => {
           </div>
         </header>
 
-        <section className="space-y-s-xl">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-s-md">
+        <section className="space-y-s-3xl">
+          {/* Weekly Overview Section */}
+          <WeeklyOverview />
+
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-s-md pt-s-xl border-t border-hairline/50">
             <div className="space-y-s-xxs">
               <h2 className="display-md text-ink">Active Subjects</h2>
-              <p className="body-sm text-mute">Tracking {subjects.length} subjects this semester.</p>
+              <div className="flex flex-col xs:flex-row xs:items-center gap-s-sm">
+                <p className="body-sm text-mute">Tracking {subjects.length} subjects this semester.</p>
+                <div className="flex bg-canvas-soft-2 p-1 rounded-pill border border-hairline w-fit">
+                  <button 
+                    onClick={() => setViewMode('all')}
+                    className={`px-s-md py-1 rounded-pill text-[11px] font-bold uppercase tracking-wider transition-all ${viewMode === 'all' ? 'bg-canvas text-ink shadow-sm' : 'text-mute hover:text-body'}`}
+                  >
+                    All
+                  </button>
+                  <button 
+                    onClick={() => setViewMode('today')}
+                    className={`px-s-md py-1 rounded-pill text-[11px] font-bold uppercase tracking-wider transition-all ${viewMode === 'today' ? 'bg-canvas text-ink shadow-sm' : 'text-mute hover:text-body'}`}
+                  >
+                    Today
+                  </button>
+                </div>
+              </div>
             </div>
             <div className="flex flex-wrap gap-s-xs sm:gap-s-sm w-full sm:w-auto">
               <button 
@@ -73,10 +109,10 @@ export const Dashboard: React.FC = () => {
               <button 
                 onClick={() => setShowTimetableModal(true)}
                 className="flex-1 sm:flex-none button-secondary-sm flex items-center justify-center gap-s-xxs px-s-sm h-[32px] !rounded-pill border border-hairline shadow-sm hover:bg-canvas-soft-2 transition-all"
-                aria-label="Upload timetable"
+                aria-label="Manage timetable"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                <span className="xs:inline">Timetable</span>
+                <span className="xs:inline">Schedule</span>
               </button>
               <button 
                 onClick={() => setShowAddForm(true)}
@@ -90,16 +126,17 @@ export const Dashboard: React.FC = () => {
           </div>
 
           {todayClasses.length > 0 && (
-            <div className="p-s-md sm:p-s-lg rounded-xl bg-canvas-soft border border-hairline animate-in slide-in-from-top-4 duration-500">
-              <div className="flex items-center justify-between mb-s-md">
+            <div className="p-s-md sm:p-s-lg rounded-xl bg-canvas-soft border border-hairline animate-in slide-in-from-top-4 duration-500 shadow-sm relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl -mr-16 -mt-16 group-hover:bg-primary/10 transition-colors"></div>
+              <div className="flex items-center justify-between mb-s-md relative z-10">
                 <div className="flex items-center gap-s-xs">
                   <div className="h-2 w-2 rounded-full bg-success animate-pulse"></div>
-                  <h3 className="caption-mono text-ink uppercase tracking-wider text-[11px]">Today's Schedule — {todayName}</h3>
+                  <h3 className="caption-mono text-ink uppercase tracking-wider text-[11px]">Today's Live Actions — {todayName}</h3>
                 </div>
               </div>
-              <div className="flex flex-wrap gap-s-xs sm:gap-s-sm">
+              <div className="flex flex-wrap gap-s-xs sm:gap-s-sm relative z-10">
                 {todayClasses.map((cls, idx) => (
-                  <div key={idx} className="px-s-sm sm:px-s-md py-s-xs rounded-lg bg-canvas border border-hairline shadow-sm flex items-center gap-s-xs sm:gap-s-sm">
+                  <div key={idx} className="px-s-sm sm:px-s-md py-s-xs rounded-lg bg-canvas border border-hairline shadow-sm flex items-center gap-s-xs sm:gap-s-sm transition-all hover:border-hairline-strong">
                     <span className="body-sm-strong text-ink truncate max-w-[120px] sm:max-w-none">{cls.subject?.name}</span>
                     <div className="flex gap-0.5 sm:gap-1">
                       <button 
@@ -123,6 +160,12 @@ export const Dashboard: React.FC = () => {
             </div>
           )}
 
+          {noClassesToday && (
+            <div className="flex flex-col items-center justify-center py-s-xl px-s-md rounded-lg bg-canvas-soft border border-hairline animate-in fade-in slide-in-from-top-2">
+              <p className="body-sm text-mute text-center">No classes scheduled for {currentDay}! Viewing all subjects.</p>
+            </div>
+          )}
+
           {subjects.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-s-6xl border border-hairline rounded-lg bg-canvas/50 backdrop-blur-sm shadow-level-1 px-s-md">
               <div className="w-16 h-16 rounded-full bg-canvas-soft-2 flex items-center justify-center mb-s-xl border border-hairline">
@@ -139,7 +182,7 @@ export const Dashboard: React.FC = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-s-lg md:gap-s-xl">
-              {subjects.map((subject) => (
+              {(noClassesToday ? subjects : filteredSubjects).map((subject) => (
                 <SubjectCard
                   key={subject.id}
                   subject={subject}
@@ -176,7 +219,10 @@ export const Dashboard: React.FC = () => {
                   <div className="p-s-md sm:p-s-lg rounded-md bg-on-primary/5 border border-on-primary/10 backdrop-blur-sm">
                     <p className="caption-mono text-on-primary/50 mb-s-xs uppercase text-[10px] tracking-widest">Must attend</p>
                     <p className="text-[24px] sm:text-display-md text-on-primary tabular-nums">
-                      {subjects.filter(s => getSubjectStats(s.id).percentage < s.targetPercentage).length} 
+                      {subjects.filter(s => {
+                        const stats = getSubjectStats(s.id);
+                        return stats.conducted > 0 && stats.percentage < s.targetPercentage;
+                      }).length} 
                       <span className="text-body-sm font-normal text-on-primary/50 ml-s-xs">critical subjects</span>
                     </p>
                   </div>

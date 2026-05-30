@@ -1,0 +1,9 @@
+{
+  "schedule": {
+    "Monday": ["Distributed Systems", "Machine Learning"],
+    "Tuesday": ["Cloud Computing"],
+    "Wednesday": ["Data Mining", "Distributed Systems"],
+    "Thursday": ["Machine Learning"],
+    "Friday": ["Ethics in IT"]
+  }
+}

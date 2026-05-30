@@ -33,6 +33,9 @@ interface AttendanceContextType {
   overallPercentage: () => number;
   updateSubject: (id: string, updates: Partial<Subject>) => void;
   uploadTimetable: (entries: { day: number; subjectName: string }[]) => void;
+  addTimetableEntry: (day: number, subjectName: string) => void;
+  removeTimetableEntry: (day: number, subjectId: string) => void;
+  clearTimetable: () => void;
   getTodayClasses: () => any[];
 }
 
@@ -118,6 +121,38 @@ export const AttendanceProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     setTimetable(newTimetable);
   };
 
+  const addTimetableEntry = (day: number, subjectName: string) => {
+    const updatedSubjects = [...subjects];
+    let subject = updatedSubjects.find(s => s.name.toLowerCase() === subjectName.toLowerCase());
+    
+    if (!subject) {
+      subject = {
+        id: generateId(),
+        name: subjectName,
+        targetPercentage: 75,
+      };
+      updatedSubjects.push(subject);
+      setSubjects(updatedSubjects);
+    }
+
+    setTimetable(prev => [...prev, { day, subjectId: subject!.id }]);
+  };
+
+  const removeTimetableEntry = (day: number, subjectId: string) => {
+    setTimetable(prev => {
+      // Find the first occurrence of this subject on this day and remove it
+      const index = prev.findIndex(t => t.day === day && t.subjectId === subjectId);
+      if (index === -1) return prev;
+      const next = [...prev];
+      next.splice(index, 1);
+      return next;
+    });
+  };
+
+  const clearTimetable = () => {
+    setTimetable([]);
+  };
+
   const getTodayClasses = () => {
     const today = new Date().getDay();
     return timetable
@@ -194,6 +229,9 @@ export const AttendanceProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       overallPercentage,
       updateSubject,
       uploadTimetable,
+      addTimetableEntry,
+      removeTimetableEntry,
+      clearTimetable,
       getTodayClasses,
     }
   }, children);

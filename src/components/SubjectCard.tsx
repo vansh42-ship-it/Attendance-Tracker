@@ -18,6 +18,7 @@ interface SubjectCardProps {
 
 export const SubjectCard: React.FC<SubjectCardProps> = ({ subject, stats, onMark, onDelete }) => {
   const isSafe = stats.percentage >= subject.targetPercentage;
+  const hasNoClasses = stats.conducted === 0;
   
   // Predict next class percentage
   const nextConducted = stats.conducted + 1;
@@ -28,8 +29,8 @@ export const SubjectCard: React.FC<SubjectCardProps> = ({ subject, stats, onMark
     <div className="card-marketing group relative overflow-hidden transition-[box-shadow,border-color,transform] hover:shadow-level-4 flex flex-col h-full border border-hairline hover:border-hairline-strong bg-canvas">
       {/* Percentage Indicator Bar */}
       <div 
-        className={`absolute top-0 left-0 h-1 transition-all duration-700 ease-in-out ${isSafe ? 'bg-success' : 'bg-error'}`}
-        style={{ width: `${stats.percentage}%` }}
+        className={`absolute top-0 left-0 h-1 transition-all duration-700 ease-in-out ${hasNoClasses ? 'bg-mute/30' : isSafe ? 'bg-success' : 'bg-error'}`}
+        style={{ width: `${hasNoClasses ? '100%' : `${stats.percentage}%`}` }}
       />
       
       <div className="flex justify-between items-start mb-s-md md:mb-s-lg">
@@ -66,7 +67,18 @@ export const SubjectCard: React.FC<SubjectCardProps> = ({ subject, stats, onMark
       </div>
 
       <div className="space-y-s-sm mb-s-xl flex-grow">
-        {isSafe ? (
+        {hasNoClasses ? (
+          <div className="p-s-sm rounded-sm bg-mute/[0.03] border border-hairline/50 space-y-s-xs transition-colors">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-s-xs">
+                <span className="h-1.5 w-1.5 rounded-full bg-mute"></span>
+                <p className="body-sm text-mute font-medium">No classes attended</p>
+              </div>
+              <p className="body-sm-strong text-mute tabular-nums">--</p>
+            </div>
+            <p className="text-[11px] text-mute/70 leading-normal">Start marking your attendance to see predictive insights and safety margins.</p>
+          </div>
+        ) : isSafe ? (
           <div className="p-s-sm rounded-sm bg-success/[0.03] border border-success/20 space-y-s-xs transition-colors">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-s-xs">
