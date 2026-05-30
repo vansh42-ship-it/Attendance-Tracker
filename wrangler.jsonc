@@ -1,0 +1,21 @@
+{
+	"compatibility_date": "2026-05-30",
+	"compatibility_flags": [
+		"global_fetch_strictly_public"
+	],
+	"name": "attendancetracker",
+	"main": "@astrojs/cloudflare/entrypoints/server",
+	"assets": {
+		"directory": "./dist",
+		"binding": "ASSETS"
+	},
+	"kv_namespaces": [
+		{
+			"binding": "SESSION",
+			"id": "130dc7ee5ab34144a6c3220f33c81c49"
+		}
+	],
+	"observability": {
+		"enabled": true
+	}
+}
