@@ -45,13 +45,20 @@ export const WeeklyOverview: React.FC = () => {
               </div>
               
               <div className="space-y-1.5 min-h-[60px]">
-                {dayClasses.map((entry, idx) => {
+                {dayClasses
+                  .sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''))
+                  .map((entry, idx) => {
                   const subject = subjects.find(s => s.id === entry.subjectId);
                   return (
-                    <div key={idx} className="px-2 py-1 rounded bg-canvas border border-hairline/50 shadow-sm overflow-hidden">
-                      <p className="text-[10px] font-medium text-ink truncate">
+                    <div key={idx} className="px-2 py-1 rounded bg-canvas border border-hairline/50 shadow-sm overflow-hidden flex flex-col">
+                      <p className="text-[10px] font-semibold text-ink truncate leading-tight">
                         {subject?.name || 'Unknown'}
                       </p>
+                      {(entry.startTime || entry.endTime) && (
+                        <p className="text-[8px] text-mute font-medium tabular-nums mt-0.5">
+                          {entry.startTime || '--:--'}
+                        </p>
+                      )}
                     </div>
                   );
                 })}

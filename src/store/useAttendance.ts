@@ -16,6 +16,7 @@ export interface AttendanceLog {
 }
 
 export interface TimetableEntry {
+  id: string;
   day: number; // 0 (Sunday) to 6 (Saturday)
   subjectId: string;
   startTime?: string;
@@ -32,9 +33,9 @@ interface AttendanceContextType {
   getSubjectStats: (subjectId: string) => any;
   overallPercentage: () => number;
   updateSubject: (id: string, updates: Partial<Subject>) => void;
-  uploadTimetable: (entries: { day: number; subjectName: string }[]) => void;
-  addTimetableEntry: (day: number, subjectName: string) => void;
-  removeTimetableEntry: (day: number, subjectId: string) => void;
+  uploadTimetable: (entries: { day: number; subjectName: string; startTime?: string; endTime?: string }[]) => void;
+  addTimetableEntry: (day: number, subjectName: string, startTime?: string, endTime?: string) => void;
+  removeTimetableEntry: (id: string) => void;
   clearTimetable: () => void;
   getTodayClasses: () => any[];
 }
@@ -97,7 +98,7 @@ export const AttendanceProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     setSubjects(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
   };
 
-  const uploadTimetable = (entries: { day: number; subjectName: string }[]) => {
+  const uploadTimetable = (entries: { day: number; subjectName: string; startTime?: string; endTime?: string }[]) => {
     const newTimetable: TimetableEntry[] = [];
     const updatedSubjects = [...subjects];
 
@@ -112,8 +113,11 @@ export const AttendanceProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         updatedSubjects.push(subject);
       }
       newTimetable.push({
+        id: generateId(),
         day: entry.day,
         subjectId: subject.id,
+        startTime: entry.startTime,
+        endTime: entry.endTime,
       });
     });
 
@@ -121,7 +125,7 @@ export const AttendanceProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     setTimetable(newTimetable);
   };
 
-  const addTimetableEntry = (day: number, subjectName: string) => {
+  const addTimetableEntry = (day: number, subjectName: string, startTime?: string, endTime?: string) => {
     const updatedSubjects = [...subjects];
     let subject = updatedSubjects.find(s => s.name.toLowerCase() === subjectName.toLowerCase());
     
@@ -135,18 +139,17 @@ export const AttendanceProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       setSubjects(updatedSubjects);
     }
 
-    setTimetable(prev => [...prev, { day, subjectId: subject!.id }]);
+    setTimetable(prev => [...prev, { 
+      id: generateId(), 
+      day, 
+      subjectId: subject!.id,
+      startTime,
+      endTime
+    }]);
   };
 
-  const removeTimetableEntry = (day: number, subjectId: string) => {
-    setTimetable(prev => {
-      // Find the first occurrence of this subject on this day and remove it
-      const index = prev.findIndex(t => t.day === day && t.subjectId === subjectId);
-      if (index === -1) return prev;
-      const next = [...prev];
-      next.splice(index, 1);
-      return next;
-    });
+  const removeTimetableEntry = (id: string) => {
+    setTimetable(prev => prev.filter(t => t.id !== id));
   };
 
   const clearTimetable = () => {

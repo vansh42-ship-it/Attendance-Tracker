@@ -135,10 +135,19 @@ export const Dashboard: React.FC = () => {
                 </div>
               </div>
               <div className="flex flex-wrap gap-s-xs sm:gap-s-sm relative z-10">
-                {todayClasses.map((cls, idx) => (
+                {todayClasses
+                  .sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''))
+                  .map((cls, idx) => (
                   <div key={idx} className="px-s-sm sm:px-s-md py-s-xs rounded-lg bg-canvas border border-hairline shadow-sm flex items-center gap-s-xs sm:gap-s-sm transition-all hover:border-hairline-strong">
-                    <span className="body-sm-strong text-ink truncate max-w-[120px] sm:max-w-none">{cls.subject?.name}</span>
-                    <div className="flex gap-0.5 sm:gap-1">
+                    <div className="flex flex-col">
+                      <span className="body-sm-strong text-ink truncate max-w-[120px] sm:max-w-none">{cls.subject?.name}</span>
+                      {(cls.startTime || cls.endTime) && (
+                        <span className="text-[9px] text-mute font-medium tabular-nums">
+                          {cls.startTime || '--:--'} - {cls.endTime || '--:--'}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex gap-0.5 sm:gap-1 ml-auto">
                       <button 
                         onClick={() => markAttendance(cls.subjectId, 'present')}
                         className="p-1 hover:bg-success/10 text-success rounded transition-colors"

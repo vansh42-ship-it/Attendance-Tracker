@@ -38,23 +38,23 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({ onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="bg-canvas rounded-2xl w-full max-w-4xl max-h-[90vh] shadow-2xl animate-in zoom-in slide-in-from-bottom-8 duration-300 overflow-hidden flex flex-col border border-hairline">
-        <div className="px-6 py-5 border-b border-hairline flex justify-between items-center bg-canvas">
+    <div className="fixed inset-0 z-50 flex items-start justify-center pt-24 overflow-y-auto bg-black/60">
+      <div className="bg-canvas rounded-2xl w-full max-w-2xl max-h-[90vh] shadow-2xl animate-in zoom-in slide-in-from-bottom-8 duration-300 overflow-hidden flex flex-col border border-hairline">
+        <div className="px-5 py-4 border-b border-hairline flex justify-between items-center bg-canvas">
           <div>
-            <h3 className="text-xl font-bold text-ink">Attendance Calendar</h3>
-            <p className="text-sm text-mute mt-0.5">
+            <h3 className="text-lg font-bold text-ink">Attendance Calendar</h3>
+            <p className="text-xs text-mute mt-0.5">
               Review and mark previous attendances
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-mute hover:text-ink hover:bg-canvas-soft-2 rounded-full transition-colors"
+            className="p-1.5 text-mute hover:text-ink hover:bg-canvas-soft-2 rounded-full transition-colors"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
+              width="18"
+              height="18"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -68,25 +68,25 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({ onClose }) => {
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="flex-1 overflow-y-auto p-4 grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Calendar Section */}
-          <div className="lg:col-span-7 space-y-6">
-            <div className="flex items-center justify-between mb-4">
-              <h4 className="text-lg font-bold text-ink">
+          <div className="lg:col-span-7 space-y-4">
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="text-base font-bold text-ink">
                 {new Intl.DateTimeFormat("en-US", {
                   month: "long",
                   year: "numeric",
                 }).format(viewDate)}
               </h4>
-              <div className="flex gap-2">
+              <div className="flex gap-1.5">
                 <button
                   onClick={prevMonth}
-                  className="p-2 hover:bg-canvas-soft-2 rounded-lg border border-hairline"
+                  className="p-1.5 hover:bg-canvas-soft-2 rounded-lg border border-hairline"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
+                    width="14"
+                    height="14"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -99,12 +99,12 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({ onClose }) => {
                 </button>
                 <button
                   onClick={nextMonth}
-                  className="p-2 hover:bg-canvas-soft-2 rounded-lg border border-hairline"
+                  className="p-1.5 hover:bg-canvas-soft-2 rounded-lg border border-hairline"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
+                    width="14"
+                    height="14"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -122,13 +122,13 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({ onClose }) => {
               {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
                 <div
                   key={d}
-                  className="text-center py-2 text-[10px] font-bold text-mute uppercase tracking-widest"
+                  className="text-center py-1 text-[9px] font-bold text-mute uppercase tracking-widest"
                 >
                   {d}
                 </div>
               ))}
               {Array.from({ length: firstDay }).map((_, i) => (
-                <div key={`empty-${i}`} className="aspect-square p-2"></div>
+                <div key={`empty-${i}`} className="aspect-square"></div>
               ))}
               {Array.from({ length: days }).map((_, i) => {
                 const day = i + 1;
@@ -142,15 +142,15 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({ onClose }) => {
                     key={day}
                     onClick={() => setSelectedDate(date)}
                     className={`
-                      aspect-square rounded-xl flex flex-col items-center justify-center relative transition-all border
-                      ${isSelected ? "bg-primary border-primary text-on-primary shadow-lg shadow-primary/20 scale-105 z-10" : "hover:bg-canvas-soft-2 border-hairline text-ink"}
+                      aspect-square rounded-lg flex flex-col items-center justify-center relative transition-all border
+                      ${isSelected ? "bg-primary border-primary text-on-primary shadow-md shadow-primary/20 scale-105 z-10" : "hover:bg-canvas-soft-2 border-hairline text-ink"}
                       ${isToday && !isSelected ? "border-primary/50 text-primary font-bold" : ""}
                     `}
                   >
-                    <span className="text-sm">{day}</span>
+                    <span className="text-xs">{day}</span>
                     {hasAttendance && (
                       <div
-                        className={`w-1 h-1 rounded-full mt-1 ${isSelected ? "bg-on-primary" : "bg-primary"}`}
+                        className={`w-0.5 h-0.5 rounded-full mt-0.5 ${isSelected ? "bg-on-primary" : "bg-primary"}`}
                       />
                     )}
                   </button>
@@ -160,19 +160,19 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({ onClose }) => {
           </div>
 
           {/* Marking Section */}
-          <div className="lg:col-span-5 flex flex-col gap-6">
+          <div className="lg:col-span-5 flex flex-col gap-4">
             <div>
-              <h4 className="text-lg font-bold text-ink mb-1">
+              <h4 className="text-base font-bold text-ink mb-0.5">
                 {new Intl.DateTimeFormat("en-US", {
                   weekday: "long",
                   month: "short",
                   day: "numeric",
                 }).format(selectedDate)}
               </h4>
-              <p className="text-sm text-mute">Mark attendance for this date</p>
+              <p className="text-xs text-mute">Mark attendance</p>
             </div>
 
-            <div className="space-y-3 flex-1 overflow-y-auto max-h-[400px] pr-2">
+            <div className="space-y-2 flex-1 overflow-y-auto max-h-[300px] pr-1">
               {subjects.map((subject) => {
                 const log = logs.find(
                   (l) =>
@@ -181,15 +181,15 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({ onClose }) => {
                 return (
                   <div
                     key={subject.id}
-                    className="p-4 rounded-xl border border-hairline bg-canvas-soft flex flex-col gap-3"
+                    className="p-3 rounded-lg border border-hairline bg-canvas-soft flex flex-col gap-2"
                   >
                     <div className="flex justify-between items-start">
-                      <span className="font-semibold text-ink">
+                      <span className="text-sm font-semibold text-ink truncate max-w-[120px]">
                         {subject.name}
                       </span>
                       {log && (
                         <span
-                          className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider
+                          className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider
                           ${
                             log.status === "present"
                               ? "bg-success/10 text-success"
@@ -203,54 +203,49 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({ onClose }) => {
                         </span>
                       )}
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-1.5">
                       <button
                         onClick={() =>
                           markAttendance(subject.id, "present", selectedDateStr)
                         }
-                        className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all border
+                        className={`flex-1 py-1 rounded-md text-[10px] font-bold transition-all border
                           ${log?.status === "present" ? "bg-success border-success text-white" : "bg-canvas border-hairline text-mute hover:text-success hover:border-success"}
                         `}
                       >
-                        Present
+                        P
                       </button>
                       <button
                         onClick={() =>
                           markAttendance(subject.id, "absent", selectedDateStr)
                         }
-                        className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all border
+                        className={`flex-1 py-1 rounded-md text-[10px] font-bold transition-all border
                           ${log?.status === "absent" ? "bg-error border-error text-white" : "bg-canvas border-hairline text-mute hover:text-error hover:border-error"}
                         `}
                       >
-                        Absent
+                        A
                       </button>
                       <button
                         onClick={() =>
                           markAttendance(subject.id, "leave", selectedDateStr)
                         }
-                        className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all border
+                        className={`flex-1 py-1 rounded-md text-[10px] font-bold transition-all border
                           ${log?.status === "leave" ? "bg-warning border-warning text-white" : "bg-canvas border-hairline text-mute hover:text-warning hover:border-warning"}
                         `}
                       >
-                        Leave
+                        L
                       </button>
                     </div>
                   </div>
                 );
               })}
-              {subjects.length === 0 && (
-                <p className="text-center text-mute py-8">
-                  No subjects added yet.
-                </p>
-              )}
             </div>
           </div>
         </div>
 
-        <div className="px-6 py-4 border-t border-hairline bg-canvas-soft-2 flex justify-end gap-3">
+        <div className="px-5 py-3 border-t border-hairline bg-canvas-soft-2 flex justify-end gap-2">
           <button
             onClick={onClose}
-            className="px-6 h-10 rounded-xl bg-ink text-canvas font-bold hover:opacity-90 transition-all"
+            className="px-5 h-9 rounded-lg bg-ink text-canvas text-sm font-bold hover:opacity-90 transition-all"
           >
             Done
           </button>
