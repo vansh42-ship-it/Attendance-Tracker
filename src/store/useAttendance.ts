@@ -13,6 +13,7 @@ export interface AttendanceLog {
   subjectId: string;
   date: string;
   status: AttendanceStatus;
+  weight?: number;
 }
 
 export interface TimetableEntry {
@@ -41,7 +42,7 @@ interface AttendanceContextType {
   profile: StudentProfile;
   addSubject: (name: string, target?: number) => Subject;
   deleteSubject: (id: string) => void;
-  markAttendance: (subjectId: string, status: AttendanceStatus, date?: string) => void;
+  markAttendance: (subjectId: string, status: AttendanceStatus, date?: string, weight?: number) => void;
   getSubjectStats: (subjectId: string) => any;
   overallPercentage: () => number;
   updateSubject: (id: string, updates: Partial<Subject>) => void;
@@ -217,13 +218,14 @@ export const AttendanceProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       .filter(t => t.subject !== undefined);
   };
 
-  const markAttendance = (subjectId: string, status: AttendanceStatus, date?: string) => {
+  const markAttendance = (subjectId: string, status: AttendanceStatus, date?: string, weight: number = 1) => {
     const targetDate = date || new Intl.DateTimeFormat('en-CA').format(new Date()); // YYYY-MM-DD
     const newLog: AttendanceLog = {
       id: generateId(),
       subjectId,
       date: targetDate,
       status,
+      weight,
     };
     setLogs(prev => {
       const filtered = prev.filter(l => !(l.subjectId === subjectId && l.date === targetDate));
@@ -233,9 +235,9 @@ export const AttendanceProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
   const getSubjectStats = (subjectId: string) => {
     const subjectLogs = logs.filter((l) => l.subjectId === subjectId);
-    const attended = subjectLogs.filter((l) => l.status === 'present').length;
-    const absent = subjectLogs.filter((l) => l.status === 'absent').length;
-    const leave = subjectLogs.filter((l) => l.status === 'leave').length;
+    const attended = subjectLogs.filter((l) => l.status === 'present').reduce((acc, l) => acc + (l.weight || 1), 0);
+    const absent = subjectLogs.filter((l) => l.status === 'absent').reduce((acc, l) => acc + (l.weight || 1), 0);
+    const leave = subjectLogs.filter((l) => l.status === 'leave').reduce((acc, l) => acc + (l.weight || 1), 0);
     
     const conducted = attended + absent;
     const percentage = conducted > 0 ? (attended / conducted) * 100 : 0;
@@ -264,8 +266,8 @@ export const AttendanceProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   };
 
   const overallPercentage = () => {
-    const totalAttended = logs.filter(l => l.status === 'present').length;
-    const totalAbsent = logs.filter(l => l.status === 'absent').length;
+    const totalAttended = logs.filter(l => l.status === 'present').reduce((acc, l) => acc + (l.weight || 1), 0);
+    const totalAbsent = logs.filter(l => l.status === 'absent').reduce((acc, l) => acc + (l.weight || 1), 0);
     const totalConducted = totalAttended + totalAbsent;
     return totalConducted > 0 ? (totalAttended / totalConducted) * 100 : 0;
   };

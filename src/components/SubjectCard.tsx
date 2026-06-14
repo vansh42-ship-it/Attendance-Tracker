@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { Subject, AttendanceStatus } from '../store/useAttendance';
 
 interface SubjectCardProps {
@@ -12,17 +12,18 @@ interface SubjectCardProps {
     safeBunks: number;
     toAttend: number;
   };
-  onMark: (status: AttendanceStatus) => void;
+  onMark: (status: AttendanceStatus, weight: number) => void;
   onDelete: () => void;
 }
 
 export const SubjectCard: React.FC<SubjectCardProps> = ({ subject, stats, onMark, onDelete }) => {
+  const [weight, setWeight] = useState<number>(1);
   const isSafe = stats.percentage >= subject.targetPercentage;
   const hasNoClasses = stats.conducted === 0;
   
   // Predict next class percentage
-  const nextConducted = stats.conducted + 1;
-  const ifPresent = ((stats.attended + 1) / nextConducted) * 100;
+  const nextConducted = stats.conducted + weight;
+  const ifPresent = ((stats.attended + weight) / nextConducted) * 100;
   const ifAbsent = (stats.attended / nextConducted) * 100;
 
   return (
@@ -124,23 +125,44 @@ export const SubjectCard: React.FC<SubjectCardProps> = ({ subject, stats, onMark
         </div>
       </div>
 
-      <div className="flex gap-s-xs mt-auto">
+      {/* Duration Weight Selector */}
+      <div className="flex items-center justify-between mb-s-md pt-s-xs border-t border-hairline/30 relative z-10">
+        <span className="caption-mono text-[9px] text-mute uppercase tracking-widest font-bold">Lecture Weight</span>
+        <div className="flex bg-canvas-soft-2 p-0.5 rounded-md border border-hairline w-fit">
+          <button
+            type="button"
+            onClick={() => setWeight(1)}
+            className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all cursor-pointer ${weight === 1 ? 'bg-canvas text-ink shadow-sm' : 'text-mute hover:text-body'}`}
+          >
+            1x (Single)
+          </button>
+          <button
+            type="button"
+            onClick={() => setWeight(2)}
+            className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all cursor-pointer ${weight === 2 ? 'bg-canvas text-ink shadow-sm' : 'text-mute hover:text-body'}`}
+          >
+            2x (Double)
+          </button>
+        </div>
+      </div>
+
+      <div className="flex gap-s-xs mt-auto relative z-10">
         <button 
-          onClick={() => onMark('present')}
+          onClick={() => onMark('present', weight)}
           className="flex-[1.5] h-9 rounded-pill bg-primary text-on-primary body-sm-strong hover:opacity-90 transition-all active:scale-[0.98] shadow-level-2"
           aria-label={`Mark present for ${subject.name}`}
         >
           Present
         </button>
         <button 
-          onClick={() => onMark('absent')}
+          onClick={() => onMark('absent', weight)}
           className="flex-1 h-9 rounded-pill border border-hairline bg-canvas text-ink body-sm-strong hover:bg-canvas-soft transition-all active:scale-[0.98]"
           aria-label={`Mark absent for ${subject.name}`}
         >
           Absent
         </button>
         <button 
-          onClick={() => onMark('leave')}
+          onClick={() => onMark('leave', weight)}
           className="flex-1 h-9 rounded-pill border border-hairline bg-canvas text-mute body-sm-strong hover:text-ink hover:bg-canvas-soft transition-all active:scale-[0.98]"
           title="Mark Leave"
           aria-label={`Mark leave for ${subject.name}`}

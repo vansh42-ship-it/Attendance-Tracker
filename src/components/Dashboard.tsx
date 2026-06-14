@@ -13,7 +13,20 @@ export const Dashboard: React.FC = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showTimetableModal, setShowTimetableModal] = useState(false);
   const [showCalendarModal, setShowCalendarModal] = useState(false);
+  const [liveWeights, setLiveWeights] = useState<{[key: string]: number}>({});
   const [viewMode, setViewMode] = useState<'today' | 'all'>('all');
+
+  const getLectureWeight = (startTime?: string, endTime?: string) => {
+    if (!startTime || !endTime) return 1;
+    try {
+      const [startH, startM] = startTime.split(':').map(Number);
+      const [endH, endM] = endTime.split(':').map(Number);
+      const durationMins = (endH * 60 + endM) - (startH * 60 + startM);
+      return durationMins >= 90 ? 2 : 1;
+    } catch {
+      return 1;
+    }
+  };
 
   const todayClasses = getTodayClasses();
   const todayName = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(new Date());
@@ -137,34 +150,52 @@ export const Dashboard: React.FC = () => {
               <div className="flex flex-wrap gap-s-xs sm:gap-s-sm relative z-10">
                 {todayClasses
                   .sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''))
-                  .map((cls, idx) => (
-                  <div key={idx} className="px-s-sm sm:px-s-md py-s-xs rounded-lg bg-canvas border border-hairline shadow-sm flex items-center gap-s-xs sm:gap-s-sm transition-all hover:border-hairline-strong">
-                    <div className="flex flex-col">
-                      <span className="body-sm-strong text-ink truncate max-w-[120px] sm:max-w-none">{cls.subject?.name}</span>
-                      {(cls.startTime || cls.endTime) && (
-                        <span className="text-[9px] text-mute font-medium tabular-nums">
-                          {cls.startTime || '--:--'} - {cls.endTime || '--:--'}
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex gap-0.5 sm:gap-1 ml-auto">
-                      <button 
-                        onClick={() => markAttendance(cls.subjectId, 'present')}
-                        className="p-1 hover:bg-success/10 text-success rounded transition-colors"
-                        title="Mark Present"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                      </button>
-                      <button 
-                        onClick={() => markAttendance(cls.subjectId, 'absent')}
-                        className="p-1 hover:bg-error/10 text-error rounded transition-colors"
-                        title="Mark Absent"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  .map((cls, idx) => {
+                    const calculatedWeight = getLectureWeight(cls.startTime, cls.endTime);
+                    const currentWeight = liveWeights[cls.id] !== undefined ? liveWeights[cls.id] : calculatedWeight;
+
+                    return (
+                      <div key={idx} className="px-s-sm sm:px-s-md py-s-xs rounded-lg bg-canvas border border-hairline shadow-sm flex items-center gap-s-xs sm:gap-s-sm transition-all hover:border-hairline-strong">
+                        <div className="flex flex-col">
+                          <span className="body-sm-strong text-ink truncate max-w-[120px] sm:max-w-none">{cls.subject?.name}</span>
+                          {(cls.startTime || cls.endTime) && (
+                            <span className="text-[9px] text-mute font-medium tabular-nums">
+                              {cls.startTime || '--:--'} - {cls.endTime || '--:--'}
+                            </span>
+                          )}
+                        </div>
+                        
+                        <button
+                          type="button"
+                          onClick={() => setLiveWeights(prev => ({
+                            ...prev,
+                            [cls.id]: currentWeight === 1 ? 2 : 1
+                          }))}
+                          className="px-1.5 py-0.5 rounded bg-canvas-soft-2 border border-hairline hover:border-hairline-strong text-[9px] font-bold text-mute hover:text-ink transition-colors cursor-pointer select-none tabular-nums"
+                          title="Click to toggle lecture weight"
+                        >
+                          {currentWeight}x
+                        </button>
+
+                        <div className="flex gap-0.5 sm:gap-1 ml-auto">
+                          <button 
+                            onClick={() => markAttendance(cls.subjectId, 'present', undefined, currentWeight)}
+                            className="p-1 hover:bg-success/10 text-success rounded transition-colors"
+                            title="Mark Present"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                          </button>
+                          <button 
+                            onClick={() => markAttendance(cls.subjectId, 'absent', undefined, currentWeight)}
+                            className="p-1 hover:bg-error/10 text-error rounded transition-colors"
+                            title="Mark Absent"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
               </div>
             </div>
           )}
@@ -196,7 +227,7 @@ export const Dashboard: React.FC = () => {
                   key={subject.id}
                   subject={subject}
                   stats={getSubjectStats(subject.id)}
-                  onMark={(status) => markAttendance(subject.id, status)}
+                  onMark={(status, weight) => markAttendance(subject.id, status, undefined, weight)}
                   onDelete={() => deleteSubject(subject.id)}
                 />
               ))}

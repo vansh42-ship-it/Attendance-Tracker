@@ -9,6 +9,7 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({ onClose }) => {
   const { subjects, logs, markAttendance } = useAttendance();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [viewDate, setViewDate] = useState<Date>(new Date());
+  const [selectedWeights, setSelectedWeights] = useState<{[key: string]: number}>({});
 
   const daysInMonth = (year: number, month: number) =>
     new Date(year, month + 1, 0).getDate();
@@ -178,6 +179,10 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({ onClose }) => {
                   (l) =>
                     l.subjectId === subject.id && l.date === selectedDateStr,
                 );
+                const currentWeight = selectedWeights[subject.id] !== undefined
+                  ? selectedWeights[subject.id]
+                  : (log?.weight || 1);
+
                 return (
                   <div
                     key={subject.id}
@@ -199,16 +204,16 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({ onClose }) => {
                           }
                         `}
                         >
-                          {log.status}
+                          {log.status}{log.weight && log.weight > 1 ? ` (${log.weight}x)` : ''}
                         </span>
                       )}
                     </div>
-                    <div className="flex gap-1.5">
+                    <div className="flex gap-1.5 items-center">
                       <button
                         onClick={() =>
-                          markAttendance(subject.id, "present", selectedDateStr)
+                          markAttendance(subject.id, "present", selectedDateStr, currentWeight)
                         }
-                        className={`flex-1 py-1 rounded-md text-[10px] font-bold transition-all border
+                        className={`flex-1 py-1 rounded-md text-[10px] font-bold transition-all border cursor-pointer
                           ${log?.status === "present" ? "bg-success border-success text-white" : "bg-canvas border-hairline text-mute hover:text-success hover:border-success"}
                         `}
                       >
@@ -216,9 +221,9 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({ onClose }) => {
                       </button>
                       <button
                         onClick={() =>
-                          markAttendance(subject.id, "absent", selectedDateStr)
+                          markAttendance(subject.id, "absent", selectedDateStr, currentWeight)
                         }
-                        className={`flex-1 py-1 rounded-md text-[10px] font-bold transition-all border
+                        className={`flex-1 py-1 rounded-md text-[10px] font-bold transition-all border cursor-pointer
                           ${log?.status === "absent" ? "bg-error border-error text-white" : "bg-canvas border-hairline text-mute hover:text-error hover:border-error"}
                         `}
                       >
@@ -226,13 +231,24 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({ onClose }) => {
                       </button>
                       <button
                         onClick={() =>
-                          markAttendance(subject.id, "leave", selectedDateStr)
+                          markAttendance(subject.id, "leave", selectedDateStr, currentWeight)
                         }
-                        className={`flex-1 py-1 rounded-md text-[10px] font-bold transition-all border
+                        className={`flex-1 py-1 rounded-md text-[10px] font-bold transition-all border cursor-pointer
                           ${log?.status === "leave" ? "bg-warning border-warning text-white" : "bg-canvas border-hairline text-mute hover:text-warning hover:border-warning"}
                         `}
                       >
                         L
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedWeights(prev => ({
+                          ...prev,
+                          [subject.id]: currentWeight === 1 ? 2 : 1
+                        }))}
+                        className="px-1.5 py-1 rounded-md bg-canvas border border-hairline hover:border-hairline-strong text-[9px] font-bold text-mute hover:text-ink transition-colors cursor-pointer select-none tabular-nums"
+                        title="Click to toggle weight"
+                      >
+                        {currentWeight}x
                       </button>
                     </div>
                   </div>
