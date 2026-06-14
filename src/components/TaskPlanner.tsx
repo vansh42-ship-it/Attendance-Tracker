@@ -135,7 +135,7 @@ export const TaskPlanner: React.FC = () => {
       {/* Task List Groups */}
       <div className="space-y-s-xl pt-2">
         {filteredTasks.length === 0 ? (
-          <div className="py-8">
+          <div className="py-8 space-y-12">
             <div className="flex flex-col items-center justify-center py-s-5xl border border-hairline border-dashed rounded-lg bg-canvas/30 px-s-md">
               <div className="w-12 h-12 rounded-full bg-canvas flex items-center justify-center mb-s-md border border-hairline shadow-sm">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-mute"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/></svg>
@@ -144,11 +144,31 @@ export const TaskPlanner: React.FC = () => {
               <p className="body-sm text-mute mb-s-lg text-center max-w-[280px]">No {filterType !== 'all' ? filterType : ''} tasks matching "{filterStatus}" criteria.</p>
               <button 
                 onClick={() => setShowModal(true)}
-                className="button-primary px-s-lg h-9 text-xs w-full xs:w-auto"
+                className="button-primary px-s-lg h-9 text-xs w-full xs:w-auto cursor-pointer"
               >
                 Create Task
               </button>
             </div>
+
+            {tasks.length === 0 && (
+              <div className="border-t border-hairline pt-8 animate-in fade-in duration-700">
+                <h2 className="display-sm text-ink mb-6">Planner Features & Capabilities</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-s-lg">
+                  <div className="p-s-lg border border-hairline rounded-lg bg-canvas-soft shadow-level-1">
+                    <h3 className="body-sm-strong text-ink mb-s-xs font-semibold uppercase tracking-wider text-[11px]">Deadlines At A Glance</h3>
+                    <p className="body-sm text-body">Categorizes assignments, quizzes, and exam dates automatically by urgency (Overdue, Today, This Week, Later) so you never miss a submission.</p>
+                  </div>
+                  <div className="p-s-lg border border-hairline rounded-lg bg-canvas-soft shadow-level-1">
+                    <h3 className="body-sm-strong text-ink mb-s-xs font-semibold uppercase tracking-wider text-[11px]">Subject Integrations</h3>
+                    <p className="body-sm text-body">Link submissions directly to your courses to align your academic planner with your subject wise attendance logs and bunk predictions.</p>
+                  </div>
+                  <div className="p-s-lg border border-hairline rounded-lg bg-canvas-soft shadow-level-1">
+                    <h3 className="body-sm-strong text-ink mb-s-xs font-semibold uppercase tracking-wider text-[11px]">Local-First Security</h3>
+                    <p className="body-sm text-body">All task records, schedules, and logs are saved directly in your browser's local storage. Zero tracking, zero cloud latency, and 100% offline support.</p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <div className="space-y-s-2xl">
