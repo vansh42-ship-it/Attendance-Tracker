@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import { ThemeToggle } from '../components/ThemeToggle';
+import { HeaderProfile } from '../components/HeaderProfile';
 
 interface Props {
 	title?: string;
@@ -97,6 +98,7 @@ const {
 				</div>
 				<div class="flex items-center gap-s-xs md:gap-s-sm">
 					<ThemeToggle client:load />
+					<HeaderProfile client:load />
 				</div>
 			</div>
 		</nav>

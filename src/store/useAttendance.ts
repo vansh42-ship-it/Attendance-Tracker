@@ -23,10 +23,22 @@ export interface TimetableEntry {
   endTime?: string;
 }
 
+export interface StudentProfile {
+  name: string;
+  rollNo: string;
+  batch: string;
+  section: string;
+  college: string;
+  currentCgpa: number;
+  targetCgpa: number;
+  profilePhoto?: string;
+}
+
 interface AttendanceContextType {
   subjects: Subject[];
   logs: AttendanceLog[];
   timetable: TimetableEntry[];
+  profile: StudentProfile;
   addSubject: (name: string, target?: number) => Subject;
   deleteSubject: (id: string) => void;
   markAttendance: (subjectId: string, status: AttendanceStatus, date?: string) => void;
@@ -38,6 +50,7 @@ interface AttendanceContextType {
   removeTimetableEntry: (id: string) => void;
   clearTimetable: () => void;
   getTodayClasses: () => any[];
+  updateProfile: (updates: Partial<StudentProfile>) => void;
 }
 
 const AttendanceContext = createContext<AttendanceContextType | undefined>(undefined);
@@ -46,6 +59,15 @@ export const AttendanceProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [logs, setLogs] = useState<AttendanceLog[]>([]);
   const [timetable, setTimetable] = useState<TimetableEntry[]>([]);
+  const [profile, setProfile] = useState<StudentProfile>({
+    name: 'Student Name',
+    rollNo: '',
+    batch: '',
+    section: '',
+    college: '',
+    currentCgpa: 0,
+    targetCgpa: 8.0,
+  });
   const [isInitialized, setIsInitialized] = useState(false);
 
   // Initialize from LocalStorage
@@ -54,9 +76,11 @@ export const AttendanceProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       const savedSubjects = localStorage.getItem('at_subjects');
       const savedLogs = localStorage.getItem('at_logs');
       const savedTimetable = localStorage.getItem('at_timetable');
+      const savedProfile = localStorage.getItem('at_profile');
       if (savedSubjects) setSubjects(JSON.parse(savedSubjects));
       if (savedLogs) setLogs(JSON.parse(savedLogs));
       if (savedTimetable) setTimetable(JSON.parse(savedTimetable));
+      if (savedProfile) setProfile(JSON.parse(savedProfile));
     } catch (e) {
       console.error("Failed to load attendance data", e);
     }
@@ -69,7 +93,33 @@ export const AttendanceProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     localStorage.setItem('at_subjects', JSON.stringify(subjects));
     localStorage.setItem('at_logs', JSON.stringify(logs));
     localStorage.setItem('at_timetable', JSON.stringify(timetable));
-  }, [subjects, logs, timetable, isInitialized]);
+    localStorage.setItem('at_profile', JSON.stringify(profile));
+  }, [subjects, logs, timetable, profile, isInitialized]);
+
+  const updateProfile = (updates: Partial<StudentProfile>) => {
+    setProfile(prev => {
+      const newProfile = { ...prev, ...updates };
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('at-profile-updated', { detail: newProfile }));
+      }
+      return newProfile;
+    });
+  };
+
+  useEffect(() => {
+    const handleUpdate = (e: Event) => {
+      const customEvent = e as CustomEvent<StudentProfile>;
+      setProfile(prev => {
+        if (JSON.stringify(prev) !== JSON.stringify(customEvent.detail)) {
+          return customEvent.detail;
+        }
+        return prev;
+      });
+    };
+
+    window.addEventListener('at-profile-updated', handleUpdate);
+    return () => window.removeEventListener('at-profile-updated', handleUpdate);
+  }, []);
 
   const generateId = () => {
     if (typeof crypto !== 'undefined' && crypto.randomUUID) {
@@ -225,6 +275,7 @@ export const AttendanceProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       subjects,
       logs,
       timetable,
+      profile,
       addSubject,
       deleteSubject,
       markAttendance,
@@ -236,6 +287,7 @@ export const AttendanceProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       removeTimetableEntry,
       clearTimetable,
       getTodayClasses,
+      updateProfile,
     }
   }, children);
 };
