@@ -18,6 +18,22 @@ const {
 	ogImage = "/favicon-96x96.png", // Default image
 	ogType = "website"
 } = Astro.props;
+
+const schemaJson = JSON.stringify({
+	"@context": "https://schema.org",
+	"@type": "WebApplication",
+	"name": title,
+	"url": canonicalURL,
+	"description": description,
+	"applicationCategory": "EducationalApplication",
+	"operatingSystem": "All",
+	"browserRequirements": "Requires HTML5.",
+	"offers": {
+		"@type": "Offer",
+		"price": "0",
+		"priceCurrency": "USD"
+	}
+});
 ---
 
 <!doctype html>
@@ -31,6 +47,7 @@ const {
 		<meta name="title" content={title} />
 		<meta name="description" content={description} />
 		<link rel="canonical" href={canonicalURL} />
+		<script type="application/ld+json" set:html={schemaJson} />
 
 		<!-- Open Graph / Facebook -->
 		<meta property="og:type" content={ogType} />
@@ -62,7 +79,6 @@ const {
 
 			gtag('config', 'G-7YS8GGX2KX');
 		</script>
-		<title>{title}</title>
 		<link rel="preconnect" href="https://fonts.googleapis.com">
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 		<link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap" rel="stylesheet">
@@ -90,11 +106,15 @@ const {
 		<!-- Navigation Bar -->
 		<nav class="sticky top-0 z-50 h-16 bg-canvas/80 backdrop-blur-md border-b border-hairline px-s-md md:px-0">
 			<div class="max-w-[1400px] mx-auto h-full flex items-center justify-between px-0 md:px-s-lg">
-				<div class="flex items-center gap-s-xs md:gap-s-md">
+				<div class="flex items-center gap-s-md md:gap-s-lg">
 					<a href="/" class="flex items-center gap-s-xxs font-semibold text-[18px] md:text-[20px] tracking-[-0.03em] hover:opacity-80 transition-opacity">
 						<span class="text-primary translate-no">Attendance</span>
 						<span class="text-mute translate-no font-normal hidden xs:inline">Tracker</span>
 					</a>
+					<div class="flex items-center gap-s-xs border-l border-hairline pl-s-md h-5">
+						<a href="/" class="text-[13px] font-medium text-body hover:text-ink px-2 py-0.5 rounded-md hover:bg-canvas-soft-2 transition-colors">Dashboard</a>
+						<a href="/planner" class="text-[13px] font-medium text-body hover:text-ink px-2 py-0.5 rounded-md hover:bg-canvas-soft-2 transition-colors">Planner</a>
+					</div>
 				</div>
 				<div class="flex items-center gap-s-xs md:gap-s-sm">
 					<ThemeToggle client:load />
@@ -110,7 +130,16 @@ const {
 
 		<!-- Footer -->
 		<footer class="bg-canvas border-t border-hairline py-s-4xl px-s-lg">
-			<div class="max-w-[1400px] mx-auto grid grid-cols-2 md:grid-cols-4 gap-s-xl">
+			<div class="max-w-[1400px] mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-s-xl">
+				<div class="space-y-s-md">
+					<p class="caption-mono uppercase text-mute font-semibold tracking-wider text-[10px]">Calculators</p>
+					<ul class="space-y-s-xs">
+						<li><a href="/dtu-attendance-calculator" class="body-sm text-body hover:text-ink transition-colors">DTU Calculator</a></li>
+						<li><a href="/vit-attendance-calculator" class="body-sm text-body hover:text-ink transition-colors">VIT Calculator</a></li>
+						<li><a href="/srm-attendance-calculator" class="body-sm text-body hover:text-ink transition-colors">SRM Calculator</a></li>
+						<li><a href="/kl-attendance-calculator" class="body-sm text-body hover:text-ink transition-colors">KL Calculator</a></li>
+					</ul>
+				</div>
 				<div class="space-y-s-md">
 					<p class="caption-mono uppercase text-mute font-semibold tracking-wider text-[10px]">Product</p>
 					<ul class="space-y-s-xs">

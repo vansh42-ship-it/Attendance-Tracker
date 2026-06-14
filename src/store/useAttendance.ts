@@ -35,11 +35,22 @@ export interface StudentProfile {
   profilePhoto?: string;
 }
 
+export interface AcademicTask {
+  id: string;
+  subjectId: string;
+  title: string;
+  dueDate: string;
+  type: 'exam' | 'assignment' | 'submission' | 'other';
+  status: 'not_started' | 'in_progress' | 'completed';
+  notes?: string;
+}
+
 interface AttendanceContextType {
   subjects: Subject[];
   logs: AttendanceLog[];
   timetable: TimetableEntry[];
   profile: StudentProfile;
+  tasks: AcademicTask[];
   addSubject: (name: string, target?: number) => Subject;
   deleteSubject: (id: string) => void;
   markAttendance: (subjectId: string, status: AttendanceStatus, date?: string, weight?: number) => void;
@@ -52,6 +63,9 @@ interface AttendanceContextType {
   clearTimetable: () => void;
   getTodayClasses: () => any[];
   updateProfile: (updates: Partial<StudentProfile>) => void;
+  addTask: (task: Omit<AcademicTask, 'id'>) => void;
+  deleteTask: (id: string) => void;
+  updateTask: (id: string, updates: Partial<AcademicTask>) => void;
 }
 
 const AttendanceContext = createContext<AttendanceContextType | undefined>(undefined);
@@ -60,6 +74,7 @@ export const AttendanceProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [logs, setLogs] = useState<AttendanceLog[]>([]);
   const [timetable, setTimetable] = useState<TimetableEntry[]>([]);
+  const [tasks, setTasks] = useState<AcademicTask[]>([]);
   const [profile, setProfile] = useState<StudentProfile>({
     name: 'Student Name',
     rollNo: '',
@@ -78,10 +93,12 @@ export const AttendanceProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       const savedLogs = localStorage.getItem('at_logs');
       const savedTimetable = localStorage.getItem('at_timetable');
       const savedProfile = localStorage.getItem('at_profile');
+      const savedTasks = localStorage.getItem('at_tasks');
       if (savedSubjects) setSubjects(JSON.parse(savedSubjects));
       if (savedLogs) setLogs(JSON.parse(savedLogs));
       if (savedTimetable) setTimetable(JSON.parse(savedTimetable));
       if (savedProfile) setProfile(JSON.parse(savedProfile));
+      if (savedTasks) setTasks(JSON.parse(savedTasks));
     } catch (e) {
       console.error("Failed to load attendance data", e);
     }
@@ -95,7 +112,47 @@ export const AttendanceProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     localStorage.setItem('at_logs', JSON.stringify(logs));
     localStorage.setItem('at_timetable', JSON.stringify(timetable));
     localStorage.setItem('at_profile', JSON.stringify(profile));
-  }, [subjects, logs, timetable, profile, isInitialized]);
+    localStorage.setItem('at_tasks', JSON.stringify(tasks));
+  }, [subjects, logs, timetable, profile, tasks, isInitialized]);
+
+  // Sync tasks state across contexts
+  useEffect(() => {
+    const handleTasksUpdate = (e: Event) => {
+      const customEvent = e as CustomEvent<AcademicTask[]>;
+      setTasks(prev => {
+        if (JSON.stringify(prev) !== JSON.stringify(customEvent.detail)) {
+          return customEvent.detail;
+        }
+        return prev;
+      });
+    };
+
+    window.addEventListener('at-tasks-updated', handleTasksUpdate);
+    return () => window.removeEventListener('at-tasks-updated', handleTasksUpdate);
+  }, []);
+
+  const dispatchTasksUpdate = (newTasks: AcademicTask[]) => {
+    setTasks(newTasks);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('at-tasks-updated', { detail: newTasks }));
+    }
+  };
+
+  const addTask = (taskInput: Omit<AcademicTask, 'id'>) => {
+    const newTask: AcademicTask = {
+      ...taskInput,
+      id: generateId(),
+    };
+    dispatchTasksUpdate([...tasks, newTask]);
+  };
+
+  const deleteTask = (id: string) => {
+    dispatchTasksUpdate(tasks.filter(t => t.id !== id));
+  };
+
+  const updateTask = (id: string, updates: Partial<AcademicTask>) => {
+    dispatchTasksUpdate(tasks.map(t => t.id === id ? { ...t, ...updates } : t));
+  };
 
   const updateProfile = (updates: Partial<StudentProfile>) => {
     setProfile(prev => {
@@ -278,6 +335,7 @@ export const AttendanceProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       logs,
       timetable,
       profile,
+      tasks,
       addSubject,
       deleteSubject,
       markAttendance,
@@ -290,6 +348,9 @@ export const AttendanceProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       clearTimetable,
       getTodayClasses,
       updateProfile,
+      addTask,
+      deleteTask,
+      updateTask,
     }
   }, children);
 };
