@@ -100,6 +100,10 @@
 }
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply bg-canvas-soft text-ink font-geist antialiased selection:bg-primary selection:text-on-primary;
     text-rendering: optimizeLegibility;
